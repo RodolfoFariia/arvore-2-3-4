@@ -81,3 +81,41 @@ void percorrePreOrdem(arvRb *arv, no *n){
     percorrePreOrdem(arv, n->esq);
     percorrePreOrdem(arv, n->dir);
 }
+
+
+void insereNo(arvRb *arv, no *novoNo){
+    // verificando validade da árvore e do nó
+    if (!arv || !novoNo) return;
+
+    no *aux = arv->sentinelaRaiz->dir;
+    no *pai = arv->sentinelaRaiz;
+
+    while (aux != arv->sentinelaFolha)
+    {
+        pai = aux;
+        if (aux->chave > novoNo->chave)
+        {
+            aux = aux->esq;
+        } 
+        else
+        {
+            aux = aux->dir;
+        }
+    }
+
+    if (pai == arv->sentinelaRaiz || pai->chave < novoNo->chave)
+    {
+        pai->dir = novoNo;
+    } 
+    else
+    {
+        pai->esq = novoNo;
+    }
+
+    novoNo->pai = pai;
+
+    balanceamentoInsercao(arv, novoNo);
+
+    arv->sentinelaRaiz->cor = 'P';
+}
+
