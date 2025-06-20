@@ -119,3 +119,109 @@ void insereNo(arvRb *arv, no *novoNo){
     arv->sentinelaRaiz->cor = 'P';
 }
 
+
+int removeNo(arvRb *arv, int chave){
+    // Validando árvore
+    if (!arv) return -1;
+
+    // Variaveis auxiliares
+    no *aux = arv->sentinelaRaiz->dir;
+    no *pai = arv->sentinelaRaiz;
+
+    while (aux != arv->sentinelaFolha && aux->chave != chave)
+    {
+        pai = aux;
+        if (aux->chave > chave)
+        {
+            aux = aux->esq;
+        } 
+        else
+        {
+            aux = aux->dir;
+        }
+    }
+
+    // Não encontrou o elemento dentro da arvore
+    if(aux == arv->sentinelaFolha) return 1;
+
+    char corOriginal = aux->cor;
+    int chaveRemovida = aux->chave;
+
+    // remoção de nó com grau 2a
+    if (aux->dir != arv->sentinelaFolha && aux->esq != arv->sentinelaFolha){
+
+        // encontrando o predecessor
+        no *predecessor = aux->esq;
+
+        while (predecessor->dir != arv->sentinelaFolha){
+            predecessor = predecessor->dir;
+        }
+
+
+        // realizando cópia dos elementos
+        corOriginal = predecessor->cor;
+        aux->chave = predecessor->chave;
+
+        // atualizando auxiliares
+        aux = predecessor;
+        pai = predecessor->pai;
+    }
+
+    // remoção de nó com grau 1
+     if (aux->dir != arv->sentinelaFolha || aux->esq != arv->sentinelaFolha){
+
+        // verificando se filho esta a direita ou a esqueda
+        no *filho;
+        if (aux->dir != arv->sentinelaFolha)
+            filho = aux->dir;
+        else
+            filho = aux->esq;
+
+        // atualizando ponteiro do pai
+        if (aux == arv->sentinelaRaiz->dir)
+        {
+            arv->sentinelaRaiz->dir = filho;
+        } 
+        else
+        {
+            if (pai->esq == aux)
+                pai->esq = filho;
+            else
+                pai->dir = filho;
+        }
+
+        filho->pai = pai;
+        chaveRemovida = aux->chave;
+
+        if (corOriginal == 'P'){
+            balanceamentoRemocao(arv, filho, pai);
+        }
+
+        free(aux);
+        return 1;
+
+     }
+
+
+    // remoção de nó com grau 0
+    if (aux == arv->sentinelaRaiz->dir){
+        arv->sentinelaRaiz->dir = arv->sentinelaFolha;
+    }
+    else
+    {
+        if (pai->esq == aux)
+                pai->esq = arv->sentinelaFolha;
+            else
+                pai->dir = arv->sentinelaFolha;
+    }
+
+    arv->sentinelaFolha->pai = pai;
+    if (corOriginal == 'P'){
+        balanceamentoRemocao(arv, arv->sentinelaFolha, arv->sentinelaFolha->pai);
+    }
+    arv->sentinelaFolha->pai = NULL;
+    free(aux);
+
+    return 0;
+
+}
