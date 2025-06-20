@@ -225,3 +225,164 @@ int removeNo(arvRb *arv, int chave){
     return 0;
 
 }
+
+
+void balanceamentoInsercao(arvRb *arv, no *novoNo){
+    // verificando validade da árvore e do nó
+    if (!arv || !novoNo) return;
+
+    no *pai = novoNo->pai;
+    no *avo, *tio;
+
+    while (pai != arv->sentinelaRaiz && pai->cor == 'V')
+    {
+        avo = pai->pai;
+
+        if (pai = avo->esq)
+        {
+            // está a esquerda do avo
+
+            tio = avo->dir;
+
+            if (tio->cor == 'V')
+            {
+                pai->cor = 'P';
+                tio->cor = 'P';
+                avo->cor = 'V';
+                novoNo = avo;
+                pai = novoNo->pai;
+            }
+            else
+            {
+                // tio é preto
+
+                if (pai->dir == novoNo)
+                {
+                    novoNo = pai;
+                    rotacaoEsquerda(arv, novoNo);
+                    pai = novoNo->pai;
+                    avo = pai->pai;
+                }
+
+                pai->cor = 'P';
+                avo->cor = 'V';
+                rotacaoDireita(arv, avo);
+            }
+        }
+        else
+        {
+            // está a direita do avó
+
+            tio = avo->esq;
+
+            // Caso 1
+            if (tio->cor == 'V')
+            {
+                pai->cor = 'P';
+                tio->cor = 'P';
+                avo->cor = 'V';
+                novoNo = avo;
+                pai = novoNo->pai;
+            }
+            else
+            {
+                // tio é preto
+
+                // Caso 2
+                if (pai->esq == novoNo)
+                {
+                    novoNo = pai;
+                    rotacaoDireita(arv, novoNo);
+                    pai = novoNo->pai;
+                    avo = pai->pai;
+                }
+
+                pai->cor = 'P';
+                avo->cor = 'V';
+                rotacaoEsquerda(arv, avo);
+            }
+        }
+        
+    }
+
+}
+
+void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
+    
+    no *irmao;
+
+    while (noSucessor != arv->sentinelaRaiz->dir && noSucessor == 'P'){
+
+        if (noSucessor == noPai->esq){
+            // está a esquerda do pai
+
+            irmao = noPai->dir;
+
+            if (irmao->cor == 'V'){
+                irmao->cor = 'P';
+                noPai->cor = 'V';
+                rotacaoEsquerda(arv, noPai);
+                irmao = noPai->dir;
+            }
+
+            if (irmao->dir->cor == 'P' && irmao->esq->cor == 'P')
+            {
+                irmao->cor = 'V';
+                noSucessor = noPai;
+                noPai = noSucessor->pai;
+            }
+            else{
+                if (irmao->dir->cor == 'P'){
+                    irmao->esq->cor = 'P';
+                    irmao->cor = 'V';
+                    rotacaoDireita(arv, irmao);
+                    irmao = noPai->dir;
+                }
+
+                irmao->cor = noPai->cor;
+                noPai->cor = 'P';
+                irmao->dir->cor = 'P';
+                rotacaoEsquerda(arv, noPai);
+
+                // fazendo com que saia do balanceamento
+                noSucessor = arv->sentinelaRaiz->dir;
+            }
+        }
+        else
+        {
+            // está a direita do pai
+
+            irmao = noPai->esq;
+
+            if (irmao->cor == 'V'){
+                irmao->cor = 'P';
+                noPai->cor = 'V';
+                rotacaoDireita(arv, noPai);
+                irmao = noPai->esq;
+            }
+
+            if (irmao->dir->cor == 'P' && irmao->esq->cor == 'P')
+            {
+                irmao->cor = 'V';
+                noSucessor = noPai;
+                noPai = noSucessor->pai;
+            }
+            else{
+                if (irmao->esq->cor == 'P'){
+                    irmao->dir->cor = 'P';
+                    irmao->cor = 'V';
+                    rotacaoEsquerda(arv, irmao);
+                    irmao = noPai->esq;
+                }
+
+                irmao->cor = noPai->cor;
+                noPai->cor = 'P';
+                irmao->esq->cor = 'P';
+                rotacaoDireita(arv, noPai);
+
+                // fazendo com que saia do balanceamento
+                noSucessor = arv->sentinelaRaiz->dir;
+        }
+    }
+    noSucessor->cor = 'P';
+}
