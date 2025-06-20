@@ -31,7 +31,7 @@ arvRb *alocaArvore(){
         free(arv);
         return NULL;
     }
-    raiz->pai = raiz->dir = raiz->esq = NULL; 
+    raiz->pai = raiz->dir = raiz->esq = arv->sentinelaFolha; 
     raiz->chave = 1000;
     raiz->cor = 'P';
 
@@ -43,7 +43,7 @@ arvRb *alocaArvore(){
         free(folha);
         return NULL;
     }
-    folha->pai = folha->dir = folha->esq = NULL; 
+    folha->pai = folha->dir = folha->esq = arv->sentinelaFolha; 
     folha->chave = -1000;
     folha->cor = 'P';
 
@@ -60,7 +60,7 @@ no *alocaNo(arvRb *arv, int chave){
     if (!novoNo) return NULL;
 
     // inicializando atributos do nó
-    novoNo->pai = novoNo->dir = novoNo->esq = NULL;
+    novoNo->pai = novoNo->dir = novoNo->esq = arv->sentinelaFolha;
     novoNo->chave = chave;
     novoNo->cor = 'V';
     novoNo->alturaPreto = 0;
