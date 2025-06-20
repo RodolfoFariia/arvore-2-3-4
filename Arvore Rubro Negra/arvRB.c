@@ -382,7 +382,64 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
 
                 // fazendo com que saia do balanceamento
                 noSucessor = arv->sentinelaRaiz->dir;
+            }
         }
     }
     noSucessor->cor = 'P';
+}
+
+
+void rotacaoEsquerda(arvRb *arv, no *noDesbalanceado){
+    no *aux = noDesbalanceado->dir;
+
+    noDesbalanceado->dir = aux->esq;
+
+    if (aux->esq != arv->sentinelaFolha){
+        aux->esq->pai = noDesbalanceado;
+    }
+
+    aux->pai = noDesbalanceado->pai;
+
+    if (noDesbalanceado->pai == arv->sentinelaRaiz){
+        arv->sentinelaRaiz->dir = aux;
+    }
+    else if (noDesbalanceado == noDesbalanceado->pai->esq)
+    {
+        noDesbalanceado->pai->esq = aux;
+    }
+    else
+    {
+        noDesbalanceado->pai->dir = aux;
+    }
+
+    aux->esq = noDesbalanceado;
+    noDesbalanceado->pai = aux;
+}
+
+
+void rotacaoDireita(arvRb *arv, no *noDesbalanceado){
+    no *aux = noDesbalanceado->esq;
+
+    noDesbalanceado->esq = aux->dir;
+
+    if (aux->dir != arv->sentinelaFolha){
+        aux->dir->pai = noDesbalanceado;
+    }
+
+    aux->pai = noDesbalanceado->pai;
+
+    if (noDesbalanceado->pai == arv->sentinelaRaiz){
+        arv->sentinelaRaiz->dir = aux;
+    }
+    else if (noDesbalanceado == noDesbalanceado->pai->esq)
+    {
+        noDesbalanceado->pai->esq = aux;
+    }
+    else
+    {
+        noDesbalanceado->pai->dir = aux;
+    }
+
+    aux->esq = noDesbalanceado;
+    noDesbalanceado->pai = aux;
 }
