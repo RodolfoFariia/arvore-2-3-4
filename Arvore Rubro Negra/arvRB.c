@@ -77,7 +77,7 @@ void rb_percorrePreOrdem(arvRb *arv, noRB *n){
     if (n == arv->sentinelaFolha)
         return;
     
-    printf("%d -- %s\n", n->chave, n->cor);
+    printf("%d -- %c\n", n->chave, n->cor);
     rb_percorrePreOrdem(arv, n->esq);
     rb_percorrePreOrdem(arv, n->dir);
 }
@@ -259,14 +259,14 @@ void rb_balanceamentoInsercao(arvRb *arv, noRB *novoNo){
                 if (pai->dir == novoNo)
                 {
                     novoNo = pai;
-                    rotacaoEsquerda(arv, novoNo);
+                    rb_rotacaoEsquerda(arv, novoNo);
                     pai = novoNo->pai;
                     avo = pai->pai;
                 }
 
                 pai->cor = 'P';
                 avo->cor = 'V';
-                rotacaoDireita(arv, avo);
+                rb_rotacaoDireita(arv, avo);
             }
         }
         else
@@ -311,7 +311,7 @@ void rb_balanceamentoRemocao(arvRb *arv, noRB *noSucessor, noRB *noPai){
     
     noRB *irmao;
 
-    while (noSucessor != arv->sentinelaRaiz->dir && noSucessor == 'P'){
+    while (noSucessor != arv->sentinelaRaiz->dir && noSucessor->cor == 'P'){
 
         if (noSucessor == noPai->esq){
             // está a esquerda do pai
