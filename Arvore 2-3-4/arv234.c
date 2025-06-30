@@ -8,23 +8,27 @@
         3. 3 -> quantidade de chaves em cada nó
 */
 
-#define ORDEM 4
-#define MAX_CHAVES (ORDEM-1)  // 3
-#define MIN_CHAVES  (ORDEM - 2) // 2    
-#define MAX_FILHOS ORDEM      // 4
+#define T           2                // grau mínimo
+#define MAX_FILHOS  (2*T)            // 4
+#define MAX_CHAVES  (2*T - 1)        // 3
+#define MIN_CHAVES  (T - 1)          // 1
 
 
 
 struct arvore234{
     no *raiz;
+    int altura;
+    int qtdSplit;
+    int totalBlocos;
+    int qtdMerges;
 };
 
 /*
     struct no:
         Atributos:
             1. folha -> váriavel para indicar se o nó é uma folha ou não.
-                a. 0 -> o nó atual é folha
-                b. 1 -> o nó atual é um não folha
+                a. 0 -> o nó atual é um não folha
+                b. 1 -> o nó atual é um folha
             2. qtd_chaves -> representa a quantidade de chaves inseridas atualmente
             3. chaves -> vetor de inteiros para armazenar as chaves do nó
             4. filhos -> vetor de ponteiros do tipo no, para armazenar os filhos de cada chave
@@ -38,3 +42,199 @@ struct no {
     no *pai;
 };
 
+
+arv234 *alocaArvore(){
+    arv234 *arv = (arv234*) malloc(sizeof(arv234));
+    if (!arv)
+        return NULL;
+
+    arv->raiz = NULL;
+    arv->altura = 0;
+    arv->qtdSplit = 0;
+    arv->totalBlocos = 0;
+    arv->qtdMerges = 0;
+
+    return arv;
+}
+
+
+no *alocaNo(){
+    no *n = (no*) malloc(sizeof(no));
+    if (!n)
+        return NULL;
+    
+    n->folha = 1;
+    n->qtd_chaves = 0;
+    n->pai = NULL;
+    for (int i=0 ; i < MAX_FILHOS; i++)
+        n->filhos[i] = NULL;
+
+    return n;
+}
+
+
+/*
+    Para realizar a inserção vamos ter 3 casos distintos:
+        1. Inserção em uma árvore vazia:
+            a. Alocamos um nó para a raiz e realizamos a inserção
+        2. Inserção em um nó não cheio
+            a. Para inserir em um nó não cheio, verificamos se é uma folha ou não
+            b. Em caso de insucesso, procuramos em qual filho deve ser inserido até chegar numa folha
+            c. Verificamos se o nó está cheio, caso não esteja, só realizamos a inserção
+            d. Em caso de nó cheio, vamos realizar o caso 3
+        3. Inserção em nó cheio
+            a. É preciso realizar um split no nó, onde o elemento central sobe para o pai, um novo nó
+                é alocado, e depois realizamos a inserção
+            b. É possível que, ao tentar passar o elemento central para o pai, este esteja cheio, então o split sobe recursivamente
+                até que seja possível inserir sem realizar um split.
+*/
+
+// Primeira função de inserção
+void inserir (arv234 *arv, int chave){
+    if (!arv) return;
+
+    // Primeiro caso -> Inserção em uma árvore vazia
+    if (arv->raiz == NULL)
+    {
+        no* raiz = alocaNo();
+        raiz->chaves[0] = chave;
+        raiz->qtd_chaves = 1;
+
+        arv->altura = 1;
+        arv->raiz = raiz;
+    }
+    else
+    {
+        // Árvore não está vazia
+
+        // Vamos verificar se a raiz está cheia
+        if (arv->raiz->qtd_chaves == MAX_CHAVES)
+        {
+            // Raiz cheia, precisamos alocar uma nova raiz
+
+            no *s = alocaNo();
+            if (!s) return;
+
+            s->folha = 0;
+            s->qtd_chaves = 0;
+
+            // Antiga raiz, vai virar filho da nova raiz s
+            s->filhos[0] = arv->raiz;
+
+            // Vamos dar split no filho
+            splitFilho(arv, s, 0);
+
+            // Nova raiz possui dois filhos
+            // Decidir qual deles recebe a nova chave
+            int i = 0;
+            if (s->chaves[0] < chave)
+                i++;
+            
+            // Vamos inserir a chave no filho de indice i
+            insereNaoCheio(arv, s->filhos[i], chave);
+
+            // Atualizar nova raiz
+            arv->raiz->pai = s;
+            arv->raiz = s;
+
+            arv->altura++;
+        }
+        else
+        {
+            // Raiz não cheia, chamamos a função de inserção não cheio
+            insereNaoCheio(arv, arv->raiz, chave);
+        }
+    }
+}
+
+void insereNaoCheio(arv234 *arv,no *x, int chave){
+    if (!arv || !x) return;
+
+    // indice do ultimo elemento cadastrado no no
+    int i = x->qtd_chaves-1;
+
+    // Vamos verificar se o nó é uma folha
+    if (x->folha == 1){
+        // Nó é uma folha
+
+        // Vamos encontrar qual posição do nó o novo elemento deve ser inserido
+        // Além de deslocar os elementos maiores
+        while (i >= 0 && x->chaves[i] > chave){
+            x->chaves[i+1] = x->chaves[i];
+            i--;
+        }
+
+        x->chaves[i+1] = chave;
+        x->qtd_chaves++;
+    }
+    else
+    {
+        // Nó não é uma folha, vamos ver em qual dos filhos ele vai ser inserido
+        while (i >= 0 && x->chaves[i] > chave)
+            i--;
+        
+        // Vamos ver se o filho onde a chave deve ser inserida está cheio
+        if (x->filhos[i+1]->qtd_chaves == MAX_CHAVES){
+            // Vamos dar um split
+            splitFilho(arv, x, i+1);
+
+            // Após o split, temos dois filhos, vamos ver em qual inserir
+            if (x->chaves[i] < chave)
+                i++;
+        }
+        insereNaoCheio(arv, x->filhos[i+1], chave);
+    }
+}
+
+void splitFilho(arv234 *arv, no *pai, int i) {
+    if (!arv || !pai) return;
+
+    // y é o filho cheio em pai->filhos[i]
+    no *y = pai->filhos[i];
+    int t = MIN_CHAVES;  // grau mínimo (t = 2 para ordem 4)
+
+    // Cria z, o novo irmão direito de y
+    no *z = alocaNo();
+    if (!z) return;
+    z->folha      = y->folha;
+    z->pai        = pai;
+    z->qtd_chaves = t - 1;    // z vai receber t-1 chaves
+
+    // 1) copia as últimas t-1 chaves de y para z
+    for (int j = 0; j < t - 1; j++) {
+        z->chaves[j] = y->chaves[j + t];
+    }
+
+    // 2) se y não é folha, copia também os últimos t filhos
+    if (!y->folha) {
+        for (int j = 0; j < t; j++) {
+            z->filhos[j] = y->filhos[j + t];
+            if (z->filhos[j])
+                z->filhos[j]->pai = z;
+        }
+    }
+
+    // 3) reduz o número de chaves em y para t-1
+    y->qtd_chaves = t - 1;
+
+    // 4) ajusta o vetor de filhos de pai para inserir z em pai->filhos[i+1]
+    // desloca filhos existentes para a direita
+    for (int j = pai->qtd_chaves; j >= i + 1; j--) {
+        pai->filhos[j + 1] = pai->filhos[j];
+    }
+    pai->filhos[i + 1] = z;
+
+    // 5) ajusta o vetor de chaves de pai para abrir espaço em pai->chaves[i]
+    for (int j = pai->qtd_chaves - 1; j >= i; j--) {
+        pai->chaves[j + 1] = pai->chaves[j];
+    }
+
+    // 6) sobe a chave do meio de y (índice t-1) para pai->chaves[i]
+    pai->chaves[i] = y->chaves[t - 1];
+
+    // 7) incrementa o número de chaves em pai
+    pai->qtd_chaves++;
+
+    // (opcional) contabiliza split
+    arv->qtdSplit++;
+}
