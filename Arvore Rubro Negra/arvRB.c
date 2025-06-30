@@ -5,28 +5,28 @@
 // Definindo struct da árvore rubro negra
 // sentinelaRaiz->dir irá apontar para a raiz da árvore
 struct arvoreRB{
-    no *sentinelaRaiz;
-    no *sentinelaFolha;
+    noRB *sentinelaRaiz;
+    noRB *sentinelaFolha;
 };
 
 
 // Definindo struct do nó
 struct no {
-    no *pai;
-    no *dir;
-    no *esq;
+    noRB *pai;
+    noRB *dir;
+    noRB *esq;
     char cor; // P - preto // V - vermelho
     int chave;
     int alturaPreto;
 };
 
 
-arvRb *alocaArvore(){
+arvRb *rb_alocaArvore(){
     arvRb *arv = (arvRb*) malloc(sizeof(arvRb));
     if (!arv) return NULL;
 
     // alocando nó sentinela raiz
-    no *raiz = (no*) malloc(sizeof(no));
+    noRB *raiz = (noRB*) malloc(sizeof(noRB));
     if (!raiz){
         free(arv);
         return NULL;
@@ -37,7 +37,7 @@ arvRb *alocaArvore(){
 
 
     // alocando nó sentinela folha
-    no *folha = (no*) malloc(sizeof(no));
+    noRB *folha = (noRB*) malloc(sizeof(noRB));
     if (!folha){
         free(arv);
         free(folha);
@@ -55,8 +55,8 @@ arvRb *alocaArvore(){
 }
 
 
-no *alocaNo(arvRb *arv, int chave){
-    no *novoNo = (no*) malloc(sizeof(no));
+noRB *rb_alocaNo(arvRb *arv, int chave){
+    noRB *novoNo = (noRB*) malloc(sizeof(noRB));
     if (!novoNo) return NULL;
 
     // inicializando atributos do nó
@@ -68,27 +68,27 @@ no *alocaNo(arvRb *arv, int chave){
     return novoNo;
 }
 
-no *getRaiz(arvRb *arv){
+noRB *rb_getRaiz(arvRb *arv){
     return arv->sentinelaRaiz->dir;
 }
 
-void percorrePreOrdem(arvRb *arv, no *n){
+void rb_percorrePreOrdem(arvRb *arv, noRB *n){
     // caso base da recursão
     if (n == arv->sentinelaFolha)
         return;
     
     printf("%d -- %s\n", n->chave, n->cor);
-    percorrePreOrdem(arv, n->esq);
-    percorrePreOrdem(arv, n->dir);
+    rb_percorrePreOrdem(arv, n->esq);
+    rb_percorrePreOrdem(arv, n->dir);
 }
 
 
-void insereNo(arvRb *arv, no *novoNo){
+void rb_insereNo(arvRb *arv, noRB *novoNo){
     // verificando validade da árvore e do nó
     if (!arv || !novoNo) return;
 
-    no *aux = arv->sentinelaRaiz->dir;
-    no *pai = arv->sentinelaRaiz;
+    noRB *aux = arv->sentinelaRaiz->dir;
+    noRB *pai = arv->sentinelaRaiz;
 
     while (aux != arv->sentinelaFolha)
     {
@@ -114,19 +114,19 @@ void insereNo(arvRb *arv, no *novoNo){
 
     novoNo->pai = pai;
 
-    balanceamentoInsercao(arv, novoNo);
+    rb_balanceamentoInsercao(arv, novoNo);
 
     arv->sentinelaRaiz->cor = 'P';
 }
 
 
-int removeNo(arvRb *arv, int chave){
+int rb_removeNo(arvRb *arv, int chave){
     // Validando árvore
     if (!arv) return -1;
 
     // Variaveis auxiliares
-    no *aux = arv->sentinelaRaiz->dir;
-    no *pai = arv->sentinelaRaiz;
+    noRB *aux = arv->sentinelaRaiz->dir;
+    noRB *pai = arv->sentinelaRaiz;
 
     while (aux != arv->sentinelaFolha && aux->chave != chave)
     {
@@ -151,7 +151,7 @@ int removeNo(arvRb *arv, int chave){
     if (aux->dir != arv->sentinelaFolha && aux->esq != arv->sentinelaFolha){
 
         // encontrando o predecessor
-        no *predecessor = aux->esq;
+        noRB *predecessor = aux->esq;
 
         while (predecessor->dir != arv->sentinelaFolha){
             predecessor = predecessor->dir;
@@ -171,7 +171,7 @@ int removeNo(arvRb *arv, int chave){
      if (aux->dir != arv->sentinelaFolha || aux->esq != arv->sentinelaFolha){
 
         // verificando se filho esta a direita ou a esqueda
-        no *filho;
+        noRB *filho;
         if (aux->dir != arv->sentinelaFolha)
             filho = aux->dir;
         else
@@ -194,7 +194,7 @@ int removeNo(arvRb *arv, int chave){
         chaveRemovida = aux->chave;
 
         if (corOriginal == 'P'){
-            balanceamentoRemocao(arv, filho, pai);
+            rb_balanceamentoRemocao(arv, filho, pai);
         }
 
         free(aux);
@@ -217,7 +217,7 @@ int removeNo(arvRb *arv, int chave){
 
     arv->sentinelaFolha->pai = pai;
     if (corOriginal == 'P'){
-        balanceamentoRemocao(arv, arv->sentinelaFolha, arv->sentinelaFolha->pai);
+        rb_balanceamentoRemocao(arv, arv->sentinelaFolha, arv->sentinelaFolha->pai);
     }
     arv->sentinelaFolha->pai = NULL;
     free(aux);
@@ -227,12 +227,12 @@ int removeNo(arvRb *arv, int chave){
 }
 
 
-void balanceamentoInsercao(arvRb *arv, no *novoNo){
+void rb_balanceamentoInsercao(arvRb *arv, noRB *novoNo){
     // verificando validade da árvore e do nó
     if (!arv || !novoNo) return;
 
-    no *pai = novoNo->pai;
-    no *avo, *tio;
+    noRB *pai = novoNo->pai;
+    noRB *avo, *tio;
 
     while (pai != arv->sentinelaRaiz && pai->cor == 'V')
     {
@@ -292,14 +292,14 @@ void balanceamentoInsercao(arvRb *arv, no *novoNo){
                 if (pai->esq == novoNo)
                 {
                     novoNo = pai;
-                    rotacaoDireita(arv, novoNo);
+                    rb_rotacaoDireita(arv, novoNo);
                     pai = novoNo->pai;
                     avo = pai->pai;
                 }
 
                 pai->cor = 'P';
                 avo->cor = 'V';
-                rotacaoEsquerda(arv, avo);
+                rb_rotacaoEsquerda(arv, avo);
             }
         }
         
@@ -307,9 +307,9 @@ void balanceamentoInsercao(arvRb *arv, no *novoNo){
 
 }
 
-void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
+void rb_balanceamentoRemocao(arvRb *arv, noRB *noSucessor, noRB *noPai){
     
-    no *irmao;
+    noRB *irmao;
 
     while (noSucessor != arv->sentinelaRaiz->dir && noSucessor == 'P'){
 
@@ -321,7 +321,7 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
             if (irmao->cor == 'V'){
                 irmao->cor = 'P';
                 noPai->cor = 'V';
-                rotacaoEsquerda(arv, noPai);
+                rb_rotacaoEsquerda(arv, noPai);
                 irmao = noPai->dir;
             }
 
@@ -335,14 +335,14 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
                 if (irmao->dir->cor == 'P'){
                     irmao->esq->cor = 'P';
                     irmao->cor = 'V';
-                    rotacaoDireita(arv, irmao);
+                    rb_rotacaoDireita(arv, irmao);
                     irmao = noPai->dir;
                 }
 
                 irmao->cor = noPai->cor;
                 noPai->cor = 'P';
                 irmao->dir->cor = 'P';
-                rotacaoEsquerda(arv, noPai);
+                rb_rotacaoEsquerda(arv, noPai);
 
                 // fazendo com que saia do balanceamento
                 noSucessor = arv->sentinelaRaiz->dir;
@@ -357,7 +357,7 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
             if (irmao->cor == 'V'){
                 irmao->cor = 'P';
                 noPai->cor = 'V';
-                rotacaoDireita(arv, noPai);
+                rb_rotacaoDireita(arv, noPai);
                 irmao = noPai->esq;
             }
 
@@ -371,14 +371,14 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
                 if (irmao->esq->cor == 'P'){
                     irmao->dir->cor = 'P';
                     irmao->cor = 'V';
-                    rotacaoEsquerda(arv, irmao);
+                    rb_rotacaoEsquerda(arv, irmao);
                     irmao = noPai->esq;
                 }
 
                 irmao->cor = noPai->cor;
                 noPai->cor = 'P';
                 irmao->esq->cor = 'P';
-                rotacaoDireita(arv, noPai);
+                rb_rotacaoDireita(arv, noPai);
 
                 // fazendo com que saia do balanceamento
                 noSucessor = arv->sentinelaRaiz->dir;
@@ -389,8 +389,8 @@ void balanceamentoRemocao(arvRb *arv, no *noSucessor, no *noPai){
 }
 
 
-void rotacaoEsquerda(arvRb *arv, no *noDesbalanceado){
-    no *aux = noDesbalanceado->dir;
+void rb_rotacaoEsquerda(arvRb *arv, noRB *noDesbalanceado){
+    noRB *aux = noDesbalanceado->dir;
 
     noDesbalanceado->dir = aux->esq;
 
@@ -417,8 +417,8 @@ void rotacaoEsquerda(arvRb *arv, no *noDesbalanceado){
 }
 
 
-void rotacaoDireita(arvRb *arv, no *noDesbalanceado){
-    no *aux = noDesbalanceado->esq;
+void rb_rotacaoDireita(arvRb *arv, noRB *noDesbalanceado){
+    noRB *aux = noDesbalanceado->esq;
 
     noDesbalanceado->esq = aux->dir;
 
