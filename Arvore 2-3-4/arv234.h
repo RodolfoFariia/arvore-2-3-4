@@ -24,4 +24,8 @@ void insereNaoCheio(arv234 *arv,no *x, int chave);
 void splitFilho(arv234 *arv,no *pai, int i);
 
 
+void percorrePreOrdem(no* n, int nivel);
+
+no *getRaiz(arv234 *arv);
+
 #endif

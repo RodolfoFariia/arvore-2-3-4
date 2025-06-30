@@ -35,13 +35,16 @@ struct arvore234{
             5. pai -> ponteiro do tipo no, apontando para o pai do nó atual
 */
 struct no {
-    int folha; 
+    int folha;
     int qtd_chaves;
     int chaves[MAX_CHAVES];
     no *filhos[MAX_FILHOS];
     no *pai;
 };
 
+no *getRaiz(arv234 *arv) {
+    return arv->raiz;
+}
 
 arv234 *alocaArvore(){
     arv234 *arv = (arv234*) malloc(sizeof(arv234));
@@ -62,7 +65,7 @@ no *alocaNo(){
     no *n = (no*) malloc(sizeof(no));
     if (!n)
         return NULL;
-    
+
     n->folha = 1;
     n->qtd_chaves = 0;
     n->pai = NULL;
@@ -129,7 +132,7 @@ void inserir (arv234 *arv, int chave){
             int i = 0;
             if (s->chaves[0] < chave)
                 i++;
-            
+
             // Vamos inserir a chave no filho de indice i
             insereNaoCheio(arv, s->filhos[i], chave);
 
@@ -170,19 +173,21 @@ void insereNaoCheio(arv234 *arv,no *x, int chave){
     else
     {
         // Nó não é uma folha, vamos ver em qual dos filhos ele vai ser inserido
+        i = x->qtd_chaves-1;
         while (i >= 0 && x->chaves[i] > chave)
             i--;
-        
+        i++;
+
         // Vamos ver se o filho onde a chave deve ser inserida está cheio
-        if (x->filhos[i+1]->qtd_chaves == MAX_CHAVES){
+        if (x->filhos[i]->qtd_chaves == MAX_CHAVES){
             // Vamos dar um split
-            splitFilho(arv, x, i+1);
+            splitFilho(arv, x, i);
 
             // Após o split, temos dois filhos, vamos ver em qual inserir
             if (x->chaves[i] < chave)
                 i++;
         }
-        insereNaoCheio(arv, x->filhos[i+1], chave);
+        insereNaoCheio(arv, x->filhos[i], chave);
     }
 }
 
@@ -191,50 +196,63 @@ void splitFilho(arv234 *arv, no *pai, int i) {
 
     // y é o filho cheio em pai->filhos[i]
     no *y = pai->filhos[i];
-    int t = MIN_CHAVES;  // grau mínimo (t = 2 para ordem 4)
+    int meio = MAX_CHAVES / 2;  // Índice da chave do meio (ex: 1 para 3 chaves)
 
-    // Cria z, o novo irmão direito de y
+    // 1. Criar novo nó z (irmão direito de y)
     no *z = alocaNo();
     if (!z) return;
-    z->folha      = y->folha;
-    z->pai        = pai;
-    z->qtd_chaves = t - 1;    // z vai receber t-1 chaves
+    z->folha = y->folha;
+    z->pai = pai;
+    z->qtd_chaves = MAX_CHAVES - meio - 1;  // Chaves após o meio
 
-    // 1) copia as últimas t-1 chaves de y para z
-    for (int j = 0; j < t - 1; j++) {
-        z->chaves[j] = y->chaves[j + t];
+    // 2. Copiar chaves maiores que o meio para z
+    for (int j = 0; j < z->qtd_chaves; j++) {
+        z->chaves[j] = y->chaves[j + meio + 1];
     }
 
-    // 2) se y não é folha, copia também os últimos t filhos
+    // 3. Copiar filhos se não for folha
     if (!y->folha) {
-        for (int j = 0; j < t; j++) {
-            z->filhos[j] = y->filhos[j + t];
-            if (z->filhos[j])
-                z->filhos[j]->pai = z;
+        for (int j = 0; j <= z->qtd_chaves; j++) {  // +1 para o último filho
+            z->filhos[j] = y->filhos[j + meio + 1];
+            if (z->filhos[j]) z->filhos[j]->pai = z;
         }
     }
 
-    // 3) reduz o número de chaves em y para t-1
-    y->qtd_chaves = t - 1;
+    // 4. Reduzir chaves em y (mantém chaves antes do meio)
+    y->qtd_chaves = meio;
 
-    // 4) ajusta o vetor de filhos de pai para inserir z em pai->filhos[i+1]
-    // desloca filhos existentes para a direita
-    for (int j = pai->qtd_chaves; j >= i + 1; j--) {
+    // 5. Abrir espaço para z nos filhos do pai
+    for (int j = pai->qtd_chaves; j > i; j--) {
         pai->filhos[j + 1] = pai->filhos[j];
     }
     pai->filhos[i + 1] = z;
 
-    // 5) ajusta o vetor de chaves de pai para abrir espaço em pai->chaves[i]
+    // 6. Abrir espaço para a nova chave no pai
     for (int j = pai->qtd_chaves - 1; j >= i; j--) {
         pai->chaves[j + 1] = pai->chaves[j];
     }
 
-    // 6) sobe a chave do meio de y (índice t-1) para pai->chaves[i]
-    pai->chaves[i] = y->chaves[t - 1];
-
-    // 7) incrementa o número de chaves em pai
+    // 7. Subir a chave do meio para o pai
+    pai->chaves[i] = y->chaves[meio];
     pai->qtd_chaves++;
 
-    // (opcional) contabiliza split
     arv->qtdSplit++;
+}
+
+
+void percorrePreOrdem(no* n, int nivel) {
+    if (n == NULL) return;
+
+    printf("Nivel %d: [", nivel);
+    for (int i = 0; i < n->qtd_chaves; i++) {
+        printf("%d", n->chaves[i]);
+        if (i < n->qtd_chaves - 1) printf(", ");
+    }
+    printf("]\n");
+
+    if (!n->folha) {
+        for (int i = 0; i <= n->qtd_chaves; i++) {
+            percorrePreOrdem(n->filhos[i], nivel + 1);
+        }
+    }
 }

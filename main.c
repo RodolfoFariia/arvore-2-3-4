@@ -1,7 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "arvRB.h"
+#include "arv234.h"
 
+int main() {
+    arv234* arv = alocaArvore();
+
+    // Caso 1: Inserção em árvore vazia
+    inserir(arv, 10);
+
+    // Caso 2: Inserções sem split
+    inserir(arv, 20);
+    inserir(arv, 30);
+
+    // Caso 3: Primeiro split (raiz cheia)
+    inserir(arv, 40);
+
+    // Caso 4: Inserção em nó não-cheio
+    inserir(arv, 5);
+
+    // Caso 5: Split em nível intermediário
+    inserir(arv, 15);
+    inserir(arv, 25);
+    inserir(arv, 35);  // Força split não na raiz
+
+    // Caso 6: Split que propaga até a raiz
+    inserir(arv, 45);
+    inserir(arv, 55);
+    inserir(arv, 65);
+    inserir(arv, 75);  // Força split na raiz
+
+    // Caso 7: Inserções após split da raiz
+    inserir(arv, 85);
+    inserir(arv, 95);
+
+    // Imprimir estrutura para validação
+    printf("Estrutura final da arvore:\n");
+    percorrePreOrdem(getRaiz(arv), 0);
+
+    return 0;
+}
+/*
+ * TESTE RUBRO NEGRA
 int main() {
     arvRb *arv = rb_alocaArvore();
     if (!arv) return 1;
@@ -100,4 +140,4 @@ int main() {
     // rb_desalocaArvore(arv);
 
     return 0;
-}
+}*/
