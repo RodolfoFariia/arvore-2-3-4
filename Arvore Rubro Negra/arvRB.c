@@ -1,3 +1,6 @@
+//
+// Created by rodolfo on 30/06/25.
+//
 #include <stdio.h>
 #include <stdlib.h>
 #include "arvRB.h"
@@ -31,10 +34,6 @@ arvRb *rb_alocaArvore(){
         free(arv);
         return NULL;
     }
-    raiz->pai = raiz->dir = raiz->esq = arv->sentinelaFolha; 
-    raiz->chave = 1000;
-    raiz->cor = 'P';
-
 
     // alocando nó sentinela folha
     noRB *folha = (noRB*) malloc(sizeof(noRB));
@@ -43,13 +42,20 @@ arvRb *rb_alocaArvore(){
         free(folha);
         return NULL;
     }
-    folha->pai = folha->dir = folha->esq = arv->sentinelaFolha; 
+
+
+    raiz->pai = raiz->dir = raiz->esq = folha;
+    raiz->chave = 1000;
+    raiz->cor = 'P';
+
+    folha->pai = folha->dir = folha->esq = folha;
     folha->chave = -1000;
     folha->cor = 'P';
 
     // inicializando atributos da arvore
     arv->sentinelaFolha = folha;
     arv->sentinelaRaiz = raiz;
+    arv->sentinelaRaiz->dir = arv->sentinelaFolha;
 
     return arv;
 }
@@ -64,7 +70,6 @@ noRB *rb_alocaNo(arvRb *arv, int chave){
     novoNo->chave = chave;
     novoNo->cor = 'V';
     novoNo->alturaPreto = 0;
-
     return novoNo;
 }
 
@@ -72,12 +77,22 @@ noRB *rb_getRaiz(arvRb *arv){
     return arv->sentinelaRaiz->dir;
 }
 
-void rb_percorrePreOrdem(arvRb *arv, noRB *n){
-    // caso base da recursão
-    if (n == arv->sentinelaFolha)
+void rb_percorrePreOrdem(arvRb *arv, noRB *n) {
+    if (n == arv->sentinelaFolha) {
         return;
-    
-    printf("%d -- %c\n", n->chave, n->cor);
+    }
+
+    printf("Chave: %d, Cor: %c\n", n->chave, n->cor);
+    printf("  Esquerda: ");
+    if (n->esq == arv->sentinelaFolha) printf("FOLHA\n");
+    else printf("%d (%c)\n", n->esq->chave, n->esq->cor);
+
+    printf("  Direita: ");
+    if (n->dir == arv->sentinelaFolha) printf("FOLHA\n");
+    else printf("%d (%c)\n", n->dir->chave, n->dir->cor);
+
+    printf("---\n");
+
     rb_percorrePreOrdem(arv, n->esq);
     rb_percorrePreOrdem(arv, n->dir);
 }
@@ -96,7 +111,7 @@ void rb_insereNo(arvRb *arv, noRB *novoNo){
         if (aux->chave > novoNo->chave)
         {
             aux = aux->esq;
-        } 
+        }
         else
         {
             aux = aux->dir;
@@ -106,7 +121,7 @@ void rb_insereNo(arvRb *arv, noRB *novoNo){
     if (pai == arv->sentinelaRaiz || pai->chave < novoNo->chave)
     {
         pai->dir = novoNo;
-    } 
+    }
     else
     {
         pai->esq = novoNo;
@@ -116,7 +131,7 @@ void rb_insereNo(arvRb *arv, noRB *novoNo){
 
     rb_balanceamentoInsercao(arv, novoNo);
 
-    arv->sentinelaRaiz->cor = 'P';
+    arv->sentinelaRaiz->dir->cor = 'P';
 }
 
 
@@ -134,7 +149,7 @@ int rb_removeNo(arvRb *arv, int chave){
         if (aux->chave > chave)
         {
             aux = aux->esq;
-        } 
+        }
         else
         {
             aux = aux->dir;
@@ -181,7 +196,7 @@ int rb_removeNo(arvRb *arv, int chave){
         if (aux == arv->sentinelaRaiz->dir)
         {
             arv->sentinelaRaiz->dir = filho;
-        } 
+        }
         else
         {
             if (pai->esq == aux)
@@ -238,7 +253,7 @@ void rb_balanceamentoInsercao(arvRb *arv, noRB *novoNo){
     {
         avo = pai->pai;
 
-        if (pai = avo->esq)
+        if (pai == avo->esq)
         {
             // está a esquerda do avo
 
@@ -302,13 +317,13 @@ void rb_balanceamentoInsercao(arvRb *arv, noRB *novoNo){
                 rb_rotacaoEsquerda(arv, avo);
             }
         }
-        
+
     }
 
 }
 
 void rb_balanceamentoRemocao(arvRb *arv, noRB *noSucessor, noRB *noPai){
-    
+
     noRB *irmao;
 
     while (noSucessor != arv->sentinelaRaiz->dir && noSucessor->cor == 'P'){
@@ -440,6 +455,6 @@ void rb_rotacaoDireita(arvRb *arv, noRB *noDesbalanceado){
         noDesbalanceado->pai->dir = aux;
     }
 
-    aux->esq = noDesbalanceado;
+    aux->dir = noDesbalanceado;
     noDesbalanceado->pai = aux;
 }
