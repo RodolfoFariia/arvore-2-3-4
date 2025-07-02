@@ -32,7 +32,7 @@ TRABALHO02/
 │   └── CMakeLists.txt
 │
 ├── main.c              # Programa principal (menu, interface)
-├── testes.c            # Casos de teste automatizados
+├── testes.c            # Casos de teste
 ├── CMakeLists.txt      # CMake principal
 └── .gitignore          # Arquivos/pastas ignorados pelo Git
 ```
