@@ -10,6 +10,12 @@
  *           Rafael Santos Pinto Batista Leite   – 2024004564                 *
  *                                                                            *
  ******************************************************************************/
+/******************************************************************************
+ * Experimentos realizados sobre a Árvore 2-3-4
+ * Arquivo: experimentos.h
+ * Declara as funções para realizar os testees de inserção e remoção
+ ******************************************************************************/
+
 
 #ifndef EXPERIMENTOS_H
 #define EXPERIMENTOS_H

@@ -10,6 +10,11 @@
  *           Rafael Santos Pinto Batista Leite   – 2024004564                 *
  *                                                                            *
  ******************************************************************************/
+/******************************************************************************
+ * Experimentos realizados sobre a Árvore 2-3-4
+ * Arquivo: experimentos.c
+ * Implementação dos testes realizados 
+ ******************************************************************************/
 
 #include "experimentos.h"
 #include <stdlib.h>
