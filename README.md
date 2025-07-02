@@ -74,21 +74,18 @@ Após `make`, você terá os executáveis:
 | Executável   | Descrição                                  |
 | ------------ | ------------------------------------------ |
 | `trabalho02` | Interface principal com menu de operações  |
-| `testes`     | Rotinas automatizadas de teste e validação |
 
 ```bash
 # Exemplo de execução:
 ./trabalho02
 
-# Para rodar testes:
-./testes
 ```
 
 ---
 
 ## 📊 Benchmarks
 
-O módulo `benchmark` mede tempo de inserção e remoção em diferentes cenários.
+O módulo `benchmark` mede algumas métricas de inserção e remoção em diferentes cenários.
 Ele grava resultados em arquivos CSV para posterior análise.
 
 ```bash
@@ -166,10 +163,5 @@ Este projeto já inclui um `.gitignore` para ignorar:
 
 ---
 
-## 📄 License
-
-[MIT License](./LICENSE)
-
----
 
 <p align="center">Feito por Rodolfo Henrique Faria e Rafael S. P. B. Leite</p>
