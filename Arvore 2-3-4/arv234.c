@@ -1,12 +1,20 @@
+/******************************************************************************
+ *                                                                            *
+ *         ÁRVORES 2-3-4 E SUA EQUIVALÊNCIA COM ÁRVORES RUBRO-NEGRAS          *
+ *                                                                            *
+ *       Algoritmos e Estrutura de Dados II – Ciência da Computação – UNIFEI  *
+ *       Professora: Vanessa Cristina Oliveira de Souza                       *
+ *                                                                            *
+ *       Trabalho desenvolvido por:                                           *
+ *           Rodolfo Henrique Faria              – 2024008886                 *
+ *           Rafael Santos Pinto Batista Leite   – 2024004564                 *
+ *                                                                            *
+ ******************************************************************************/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "arv234.h"
-/*
-    Como estamos falando de uma árvore 2 3 4:
-        1. Ordem = 4 (quantidade máxima de filhos)
-        2. 2 -> quantidade mninima de filhos
-        3. 3 -> quantidade de chaves em cada nó
-*/
 
 #define T           2                // grau mínimo
 #define MAX_FILHOS  (2*T)            // 4
@@ -15,32 +23,6 @@
 
 
 
-struct arvore234{
-    no *raiz;
-    int altura;
-    int qtdSplit;
-    int totalBlocos;
-    int qtdMerges;
-};
-
-/*
-    struct no:
-        Atributos:
-            1. folha -> váriavel para indicar se o nó é uma folha ou não.
-                a. 0 -> o nó atual é um não folha
-                b. 1 -> o nó atual é um folha
-            2. qtd_chaves -> representa a quantidade de chaves inseridas atualmente
-            3. chaves -> vetor de inteiros para armazenar as chaves do nó
-            4. filhos -> vetor de ponteiros do tipo no, para armazenar os filhos de cada chave
-            5. pai -> ponteiro do tipo no, apontando para o pai do nó atual
-*/
-struct no {
-    int folha;
-    int qtd_chaves;
-    int chaves[MAX_CHAVES];
-    no *filhos[MAX_FILHOS];
-    no *pai;
-};
 
 no *getRaiz(arv234 *arv) {
     return arv->raiz;
@@ -54,14 +36,16 @@ arv234 *alocaArvore(){
     arv->raiz = NULL;
     arv->altura = 0;
     arv->qtdSplit = 0;
-    arv->totalBlocos = 0;
+    arv->qtdNos = 0;
     arv->qtdMerges = 0;
+    arv->qtdRotacoes = 0;
+    arv->vetorOriginal = NULL;
 
     return arv;
 }
 
 
-no *alocaNo(){
+no *alocaNo(arv234 *arv){
     no *n = (no*) malloc(sizeof(no));
     if (!n)
         return NULL;
@@ -72,34 +56,44 @@ no *alocaNo(){
     for (int i=0 ; i < MAX_FILHOS; i++)
         n->filhos[i] = NULL;
 
+    // atualizando quantidade total de nós
+    arv->qtdNos+=1;
+
     return n;
 }
 
 
 /*
-    Para realizar a inserção vamos ter 3 casos distintos:
-        1. Inserção em uma árvore vazia:
-            a. Alocamos um nó para a raiz e realizamos a inserção
-        2. Inserção em um nó não cheio
-            a. Para inserir em um nó não cheio, verificamos se é uma folha ou não
-            b. Em caso de insucesso, procuramos em qual filho deve ser inserido até chegar numa folha
-            c. Verificamos se o nó está cheio, caso não esteja, só realizamos a inserção
-            d. Em caso de nó cheio, vamos realizar o caso 3
-        3. Inserção em nó cheio
-            a. É preciso realizar um split no nó, onde o elemento central sobe para o pai, um novo nó
-                é alocado, e depois realizamos a inserção
-            b. É possível que, ao tentar passar o elemento central para o pai, este esteja cheio, então o split sobe recursivamente
-                até que seja possível inserir sem realizar um split.
+    Inserção na Árvore 2-3-4 – três cenários:
+
+    1. Árvore vazia
+       - Alocar um novo nó como raiz
+       - Inserir a chave na raiz
+
+    2. Inserção em nó não cheio
+       - Se for folha: inserir diretamente na posição correta
+       - Caso contrário:
+         • Determinar o filho apropriado para descer
+         • Repetir até alcançar uma folha
+         • Se o nó alvo não estiver cheio, inserir a chave
+         • Se estiver cheio, tratar como no caso 3
+
+    3. Inserção em nó cheio
+       - Realizar split no nó cheio:
+         • O elemento mediano sobe para o pai
+         • Criar um novo nó para a metade direita
+       - Se o pai ficar cheio, propagar o split recursivamente
+       - Após splits necessários, inserir a nova chave no nó adequado
 */
 
-// Primeira função de inserção
+// Função principal de inserção
 void inserir (arv234 *arv, int chave){
     if (!arv) return;
 
     // Primeiro caso -> Inserção em uma árvore vazia
     if (arv->raiz == NULL)
     {
-        no* raiz = alocaNo();
+        no* raiz = alocaNo(arv);
         raiz->chaves[0] = chave;
         raiz->qtd_chaves = 1;
 
@@ -115,7 +109,7 @@ void inserir (arv234 *arv, int chave){
         {
             // Raiz cheia, precisamos alocar uma nova raiz
 
-            no *s = alocaNo();
+            no *s = alocaNo(arv);
             if (!s) return;
 
             s->folha = 0;
@@ -140,6 +134,7 @@ void inserir (arv234 *arv, int chave){
             arv->raiz->pai = s;
             arv->raiz = s;
 
+            // Como alocamos uma nova raiz, aumentamos a altura da árvore
             arv->altura++;
         }
         else
@@ -150,6 +145,7 @@ void inserir (arv234 *arv, int chave){
     }
 }
 
+// Insere chave em nó não cheio (x) da árvore
 void insereNaoCheio(arv234 *arv,no *x, int chave){
     if (!arv || !x) return;
 
@@ -199,7 +195,7 @@ void splitFilho(arv234 *arv, no *pai, int i) {
     int meio = MAX_CHAVES / 2;  // Índice da chave do meio (ex: 1 para 3 chaves)
 
     // 1. Criar novo nó z (irmão direito de y)
-    no *z = alocaNo();
+    no *z = alocaNo(arv);
     if (!z) return;
     z->folha = y->folha;
     z->pai = pai;
@@ -255,4 +251,275 @@ void percorrePreOrdem(no* n, int nivel) {
             percorrePreOrdem(n->filhos[i], nivel + 1);
         }
     }
+}
+
+
+
+// --------------- FUNÇÕES PARA REMOÇÃO ---------------------
+
+// Encontra o índice da primeira chave >= k no nó dado
+int encontraChaveNo(no *n, int chave) {
+    int idx = 0;
+    while (idx < n->qtd_chaves && n->chaves[idx] < chave)
+        idx++;
+    return idx;
+}
+
+void remover(arv234 *arv, no *n, int chave) {
+    // Verificação de segurança
+    if (n == NULL) return;
+
+    int idx = encontraChaveNo(n, chave);
+
+    // Caso 1: a chave está neste nó
+    if (idx < n->qtd_chaves && n->chaves[idx] == chave) {
+        if (n->folha) {
+            removeDaFolha(n, idx);
+        } else {
+            removeDeNaoFolha(arv, n, idx);
+        }
+    }
+    // Caso 2: a chave não está neste nó
+    else {
+        if (n->folha) {
+            // Chave não encontrada na árvore
+            return;
+        }
+
+        // Flag para verificar se estamos no último filho
+        int flag = (idx == n->qtd_chaves);
+
+        // Se o filho tem menos que T chaves, preencher antes de descer
+        if (n->filhos[idx]->qtd_chaves < T) {
+            preencher(arv, n, idx);
+        }
+
+        // Após o preenchimento, a estrutura pode ter mudado
+        // Verificamos se o índice ainda é válido
+        if (flag && idx > n->qtd_chaves) {
+            remover(arv, n->filhos[idx - 1], chave);
+        } else {
+            remover(arv, n->filhos[idx], chave);
+        }
+    }
+}
+
+void removeChave(arv234* arv, int chave) {
+    if (!arv || !arv->raiz) return;
+
+    remover(arv, arv->raiz, chave);
+
+    // Se a raiz ficou vazia
+    if (arv->raiz->qtd_chaves == 0) {
+        no* temp = arv->raiz;
+        if (arv->raiz->folha) {
+            arv->raiz = NULL;
+        } else {
+            // A nova raiz é o primeiro filho
+            arv->raiz = arv->raiz->filhos[0];
+        }
+        free(temp);
+    }
+}
+
+// Preenche o filho[idx] que tem menos que T chaves
+void preencher(arv234* arv, no* n, int idx) {
+    // Tenta pegar emprestado do irmão esquerdo
+    if (idx > 0 && n->filhos[idx-1]->qtd_chaves > T) {
+        emprestaAnterior(n, idx);
+        arv->qtdRotacoes++;
+    }
+    // Tenta pegar emprestado do irmão direito
+    else if (idx < n->qtd_chaves && n->filhos[idx+1]->qtd_chaves > T) {
+        emprestaProximo(n, idx);
+        arv->qtdRotacoes++;
+    }
+    // Caso não possa pegar emprestado, faz merge
+    else {
+        if (idx > 0) {
+            merge(arv, n, idx-1);
+        } else {
+            merge(arv, n, idx);
+        }
+    }
+}
+
+void merge(arv234* arv, no* n, int idx) {
+    // Verificações de segurança
+    if (n == NULL || idx < 0 || idx >= n->qtd_chaves) return;
+    no* filho = n->filhos[idx];
+    no* irmao = n->filhos[idx+1];
+    if (filho == NULL || irmao == NULL) return;
+
+    // Verifica capacidade
+    if (filho->qtd_chaves + irmao->qtd_chaves + 1 > 3) return;
+
+    // Move chave do pai para o filho
+    filho->chaves[filho->qtd_chaves] = n->chaves[idx];
+    filho->qtd_chaves++;
+
+    // Copia chaves do irmão
+    for (int i = 0; i < irmao->qtd_chaves; i++) {
+        filho->chaves[filho->qtd_chaves + i] = irmao->chaves[i];
+    }
+
+    // Copia filhos do irmão (se aplicável)
+    if (!filho->folha) {
+        for (int i = 0; i <= irmao->qtd_chaves; i++) {
+            filho->filhos[filho->qtd_chaves + i] = irmao->filhos[i];
+        }
+    }
+
+    // Atualiza contagem total de chaves
+    filho->qtd_chaves += irmao->qtd_chaves;
+
+    // Remove chave e filho do nó pai
+    for (int i = idx+1; i < n->qtd_chaves; i++) {
+        n->chaves[i-1] = n->chaves[i];
+    }
+    for (int i = idx+2; i <= n->qtd_chaves; i++) {
+        n->filhos[i-1] = n->filhos[i];
+    }
+    n->qtd_chaves--;
+
+    free(irmao);
+    arv->qtdMerges++;
+}
+
+// Pega uma chave do irmão direito
+void emprestaProximo(no* n, int idx) {
+    no* filho = n->filhos[idx];
+    no* irmao = n->filhos[idx+1];
+
+    // Move chave do pai para o filho
+    filho->chaves[filho->qtd_chaves] = n->chaves[idx];
+
+    // Move primeiro filho do irmão se necessário
+    if (!filho->folha) {
+        filho->filhos[filho->qtd_chaves+1] = irmao->filhos[0];
+    }
+
+    // Move primeira chave do irmão para o pai
+    n->chaves[idx] = irmao->chaves[0];
+
+    // Ajusta chaves do irmão
+    for (int i = 1; i < irmao->qtd_chaves; i++) {
+        irmao->chaves[i-1] = irmao->chaves[i];
+    }
+
+    // Ajusta filhos do irmão se necessário
+    if (!irmao->folha) {
+        for (int i = 1; i <= irmao->qtd_chaves; i++) {
+            irmao->filhos[i-1] = irmao->filhos[i];
+        }
+    }
+
+    filho->qtd_chaves++;
+    irmao->qtd_chaves--;
+}
+
+// Pega uma chave do irmão esquerdo
+void emprestaAnterior(no* n, int idx) {
+    no* filho = n->filhos[idx];
+    no* irmao = n->filhos[idx-1];
+
+    // Abre espaço no filho
+    for (int i = filho->qtd_chaves-1; i >= 0; i--) {
+        filho->chaves[i+1] = filho->chaves[i];
+    }
+
+    // Move filhos se necessário
+    if (!filho->folha) {
+        for (int i = filho->qtd_chaves; i >= 0; i--) {
+            filho->filhos[i+1] = filho->filhos[i];
+        }
+    }
+
+    // Move chave do pai para o filho
+    filho->chaves[0] = n->chaves[idx-1];
+
+    // Move último filho do irmão se necessário
+    if (!filho->folha) {
+        filho->filhos[0] = irmao->filhos[irmao->qtd_chaves];
+    }
+
+    // Move última chave do irmão para o pai
+    n->chaves[idx-1] = irmao->chaves[irmao->qtd_chaves-1];
+
+    filho->qtd_chaves++;
+    irmao->qtd_chaves--;
+}
+
+// Remove chave de nó folha
+void removeDaFolha(no* n, int idx) {
+    for (int i = idx+1; i < n->qtd_chaves; i++) {
+        n->chaves[i-1] = n->chaves[i];
+    }
+    n->qtd_chaves--;
+}
+
+// Remove chave de nó interno
+void removeDeNaoFolha(arv234* arv, no* n, int idx) {
+    int chave = n->chaves[idx];
+
+    // Caso 3a: Filho anterior tem chaves suficientes
+    if (n->filhos[idx]->qtd_chaves > T) {
+        no* pred = n->filhos[idx];
+        while (!pred->folha) {
+            pred = pred->filhos[pred->qtd_chaves];
+        }
+        int pred_chave = pred->chaves[pred->qtd_chaves-1];
+        n->chaves[idx] = pred_chave;
+        remover(arv, n->filhos[idx], pred_chave);
+    }
+    // Caso 3b: Filho posterior tem chaves suficientes
+    else if (n->filhos[idx+1]->qtd_chaves > T) {
+        no* succ = n->filhos[idx+1];
+        while (!succ->folha) {
+            succ = succ->filhos[0];
+        }
+        int succ_chave = succ->chaves[0];
+        n->chaves[idx] = succ_chave;
+        remover(arv, n->filhos[idx+1], succ_chave);
+    }
+    // Caso 3c: Ambos os filhos têm número mínimo de chaves
+    else {
+        merge(arv, n, idx);
+        remover(arv, n->filhos[idx], chave);
+    }
+}
+
+// --------- Funções Auxiliares de Consulta ---------
+
+int getQtdSplits(arv234 *arv) {
+    return arv->qtdSplit;
+}
+
+int getAltura(arv234 *arv) {
+    return arv->altura;
+}
+
+// Considerando um bloco de memória de HD de 512 bytes,
+// o tamanho aproximado da struct `no` (incluindo padding) é de ~64 bytes.
+// Sendo assim, um bloco acomoda 512/64 = 8 nós.
+int getQtdBlocos(arv234 *arv) {
+    int tam_bloco = 512;
+    int tam_no = 64;
+
+    if (arv->qtdNos == 0) return 0;
+
+    int nos_por_bloco = tam_bloco / tam_no;
+
+    // ceil(arv->qtdNos / nos_por_bloco)
+    int blocos_necessarios = (arv->qtdNos + nos_por_bloco - 1) / nos_por_bloco;
+
+    return blocos_necessarios;
+}
+
+int getQtdRotacoes(arv234 *arv) {
+    return arv->qtdRotacoes;
+}
+
+int getQtdMerges(arv234 *arv) {
+    return arv->qtdMerges;
 }
