@@ -1,0 +1,31 @@
+# Diretório de build do CMake
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/Makefile
+/*.cmake
+
+# Objetos e binários
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+
+# Logs e relatórios
+*.log
+*.tmp
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Editor temporários
+*~
+*.swp
