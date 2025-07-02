@@ -73,7 +73,10 @@ no *getRaiz(arv234 *arv);
 // Encontra índice da primeira chave >= chave no nó n
 int encontraChaveNo(no *n, int chave);
 
-// Remove a chave de um nó (rotina principal)
+// Rotina Principal de Remoção
+void remover(arv234 *arv, no *n, int chave) ;
+
+// Remove a chave de um nó
 void removeChave(arv234 *arv, int chave);
 
 // Trata remoção de chave em nó folha (índice idx)
