@@ -3,9 +3,9 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
-#include "Arvore Rubro Negra/arvRB.h"
-#include "Arvore 2-3-4/arv234.h"
-#include "Conversao/conversao.h"
+#include "arvrb/arvRB.h"
+#include "arv234/arv234.h"
+#include "conversao/conversao.h"
 
 /* ------------------- TESTE DE CONVERSÃO 234 -> RB --------------------
 int main() {

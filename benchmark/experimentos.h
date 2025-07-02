@@ -20,7 +20,7 @@
 #ifndef EXPERIMENTOS_H
 #define EXPERIMENTOS_H
 
-#include "../Arvore 2-3-4/arv234.h"
+#include "../arv234/arv234.h"
 #include <stdio.h>
 
 // --------------- PREENCHER VETOR ALEATÓRIO ---------------------

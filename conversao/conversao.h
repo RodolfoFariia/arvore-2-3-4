@@ -21,8 +21,8 @@
 #ifndef CONVERSAO_H
 #define CONVERSAO_H
 
-#include "../Arvore 2-3-4/arv234.h"
-#include "../Arvore Rubro Negra/arvRB.h"
+#include "../arv234/arv234.h"
+#include "../arvrb/arvRB.h"
 
 
 // Função para iniciar a conversão, alocando arvores e nós necessários
