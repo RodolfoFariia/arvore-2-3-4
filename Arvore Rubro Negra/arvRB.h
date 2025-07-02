@@ -1,48 +1,82 @@
+/******************************************************************************
+*                                                                            *
+ *         ÁRVORES 2-3-4 E SUA EQUIVALÊNCIA COM ÁRVORES RUBRO-NEGRAS          *
+ *                                                                            *
+ *       Algoritmos e Estrutura de Dados II – Ciência da Computação – UNIFEI  *
+ *       Professora: Vanessa Cristina Oliveira de Souza                       *
+ *                                                                            *
+ *       Trabalho desenvolvido por:                                           *
+ *           Rodolfo Henrique Faria              – 2024008886                 *
+ *           Rafael Santos Pinto Batista Leite   – 2024004564                 *
+ *                                                                            *
+ ******************************************************************************/
 
-#ifndef ARVRB_ARVRB_H
-#define ARVRB_ARVRB_H
+#ifndef ARVRB_H
+#define ARVRB_H
 
-// renomeando structs
+// Renomeação de structs
 typedef struct arvoreRB arvRb;
-typedef struct no noRB;
+typedef struct noRB noRB;
 
+// Definição da estrutura da Árvore Rubro-Negra
+// sentinelaRaiz->dir aponta para o nó raiz da árvore
+struct arvoreRB {
+    noRB *sentinelaRaiz;
+    noRB *sentinelaFolha;
+};
 
-// Função para alocar uma árvore rubro negra
+// Definição da estrutura de um nó da Árvore Rubro-Negra
+struct noRB {
+    noRB *pai;
+    noRB *dir;
+    noRB *esq;
+    char cor;        // 'P' = preto, 'V' = vermelho
+    int chave;
+    int alturaPreto; // Conta o número de nós pretos no caminho até as folhas
+};
+
+// Aloca e inicializa uma nova Árvore Rubro-Negra
 arvRb *rb_alocaArvore();
 
-// Função que aloca um novo nó
+// Cria e inicializa um novo nó com a chave informada
 noRB *rb_alocaNo(arvRb *arv, int chave);
 
-// Função iterativa para inserir um novo nó na estrutura da árvore
+// Insere iterativamente um nó na Árvore Rubro-Negra
 void rb_insereNo(arvRb *arv, noRB *novoNo);
 
-// Função para remover um nó da arvore pela sua chave
-// Retornos da função
-// 0 - indica sucesso na remoção 
-// 1 - indica que o elemento a ser removido não foi encontrado na árvore
-// -1 - indica erro durante o processo do remoção
+// Remove um nó pela chave
+// Retorno:  0 = sucesso
+//            1 = chave não encontrada
+//           -1 = erro durante a remoção
 int rb_removeNo(arvRb *arv, int chave);
 
-
-// Percorre em pré-ordem
+// Percorre a árvore em pré-ordem, a partir do nó n
 void rb_percorrePreOrdem(arvRb *arv, noRB *n);
 
-// Função auxiliar para retornar a raiz da árvore
+// Retorna a raiz da árvore (sentinelaRaiz->dir)
 noRB *rb_getRaiz(arvRb *arv);
 
-// Funções de Balanceamento da Rubro Negra
+// ===== Funções de balanceamento da Árvore Rubro-Negra =====
 
-// Função para corrigir o balanceamento após inserir um novo nó
+// Ajusta o balanceamento após inserção de novo nó
 void rb_balanceamentoInsercao(arvRb *arv, noRB *novoNo);
 
-// Função para corrigir o balanceamento após remover um novo nó
+// Ajusta o balanceamento após remoção de nó
 void rb_balanceamentoRemocao(arvRb *arv, noRB *noSucessor, noRB *noPai);
 
-// rotacionar um nó a esquerda
+// Rotaciona o subárvore para a esquerda a partir de noDesbalanceado
 void rb_rotacaoEsquerda(arvRb *arv, noRB *noDesbalanceado);
 
-// rotacionar um nó a direita
+// Rotaciona o subárvore para a direita a partir de noDesbalanceado
 void rb_rotacaoDireita(arvRb *arv, noRB *noDesbalanceado);
 
 
-#endif
+// ===== Funções auxiliares para conversão entre estruturas =====
+
+// Define a raiz da árvore (sentinelaRaiz->dir)
+void rb_setRaiz(arvRb *arv, noRB *novaRaiz);
+
+// Altera a cor de um nó ('P' ou 'V')
+void rb_setCor(noRB *no, char cor);
+
+#endif // ARVRB_H

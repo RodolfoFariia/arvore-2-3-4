@@ -1,27 +1,19 @@
-//
-// Created by rodolfo on 30/06/25.
-//
+/******************************************************************************
+*                                                                            *
+ *         ÁRVORES 2-3-4 E SUA EQUIVALÊNCIA COM ÁRVORES RUBRO-NEGRAS          *
+ *                                                                            *
+ *       Algoritmos e Estrutura de Dados II – Ciência da Computação – UNIFEI  *
+ *       Professora: Vanessa Cristina Oliveira de Souza                       *
+ *                                                                            *
+ *       Trabalho desenvolvido por:                                           *
+ *           Rodolfo Henrique Faria              – 2024008886                 *
+ *           Rafael Santos Pinto Batista Leite   – 2024004564                 *
+ *                                                                            *
+ ******************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "arvRB.h"
-
-// Definindo struct da árvore rubro negra
-// sentinelaRaiz->dir irá apontar para a raiz da árvore
-struct arvoreRB{
-    noRB *sentinelaRaiz;
-    noRB *sentinelaFolha;
-};
-
-
-// Definindo struct do nó
-struct no {
-    noRB *pai;
-    noRB *dir;
-    noRB *esq;
-    char cor; // P - preto // V - vermelho
-    int chave;
-    int alturaPreto;
-};
 
 
 arvRb *rb_alocaArvore(){
@@ -226,7 +218,7 @@ int rb_removeNo(arvRb *arv, int chave){
     {
         if (pai->esq == aux)
                 pai->esq = arv->sentinelaFolha;
-            else
+        else
                 pai->dir = arv->sentinelaFolha;
     }
 
@@ -457,4 +449,18 @@ void rb_rotacaoDireita(arvRb *arv, noRB *noDesbalanceado){
 
     aux->dir = noDesbalanceado;
     noDesbalanceado->pai = aux;
+}
+
+// Função para setar a raiz da árvore RB
+void rb_setRaiz(arvRb *arv, noRB *novaRaiz) {
+    if (arv != NULL) {
+        arv->sentinelaRaiz->dir = novaRaiz;
+    }
+}
+
+// Função para setar a cor de um nó
+void rb_setCor(noRB *no, char cor) {
+    if (no != NULL) {
+        no->cor = cor;
+    }
 }
